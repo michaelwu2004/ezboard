@@ -1,5 +1,6 @@
 import './index.css'
 import './App.css'
+import Test from './components/Test'
 
 function App() {
 
@@ -7,9 +8,7 @@ function App() {
   return (
     <>
       <div className='flex flex-row'>
-        <div>
-          Initial Commit
-        </div>
+        <Test />
       </div>
     </>
   )
