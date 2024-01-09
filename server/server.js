@@ -1,10 +1,11 @@
-import express from 'express';
-import http from 'http';
-import cors from 'cors';
-import { Server } from 'socket.io';
+import express from 'express'
+import http from 'http'
+import cors from 'cors'
+import { v4 } from 'uuid'
+import { Server } from 'socket.io'
 
-const app = express();
-app.use(cors());
+const app = express()
+app.use(cors())
 
 const server = http.createServer(app);
 
@@ -14,11 +15,22 @@ const io = new Server(server, {
 })
 
 io.on("connection", (socket) => {
-  console.log("connection established with ", socket.id);
+  console.log("connection established with ", socket.id)
+
+  socket.emit("initial_room", socket.id)
+  socket.join(socket.id)
 
   socket.on("join_room", (data) => {
     socket.join(data)
     console.log(`User ${socket.id} joined ${data}`)
+    const roomSize = io.sockets.adapter.rooms.get(data).size
+    console.log(`USER: ${socket.id} Room ${data} has ${roomSize} users in it`)
+    socket.emit('updateUsers', roomSize)
+    socket.to(data).emit('updateUsers', roomSize)
+  })
+
+  socket.on("drawing", (data) => {
+    socket.to(data.room).emit("new_drawing", data)
   })
 
   socket.on("send_message", (data) => {
@@ -27,7 +39,7 @@ io.on("connection", (socket) => {
   })
 
   socket.on("disconnect", () => {
-    console.log("User disconnected: ", socket.id);
+    console.log("User disconnected: ", socket.id)
   })
 })
 

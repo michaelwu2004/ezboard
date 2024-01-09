@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.black-olive {
+  background-color: #403D39;
+}
+
+.timberwolf {
+  background-color: #CCC5B9;
+}
+
+.floral-white {
+  background-color: #FFFCF2;
+}
+
+.eerie-black {
+  background-color: #252422;
+}
+
+.flame {
+  background-color: #EB4E28;
+}
