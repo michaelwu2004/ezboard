@@ -4,6 +4,7 @@ import Draggable from 'react-draggable';
 import Chat from './Chat'
 import CustomInput from './CustomInput';
 import DropDown from './DropDown';
+import Board from './Board';
 
 const socket = io.connect("http://localhost:3001")
 
@@ -13,6 +14,12 @@ function Test() {
   const [username, setUsername] = useState("")
   const [roomId, setRoomId] = useState("")
   const [room, setRoom] = useState("")
+  const [coordinates, setCoordinates] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e) => {
+    const { clientX, clientY } = e;
+    setCoordinates({ x: clientX, y: clientY });
+  };
 
   const joinRoom = () => {
     setRoomId(room)
@@ -49,7 +56,7 @@ function Test() {
   </div>
 
   return (
-    <div className='w-screen h-screen'>
+    <div className='w-screen h-screen' onMouseMove={handleMouseMove}>
       <DropDown text={'User and room info'} element={e} />
       {roomCount >= 2 ?
         <Draggable>
@@ -60,6 +67,12 @@ function Test() {
         :
         null
       }
+      <Board socket={socket} room={room} />
+      <h2>Cursor Coordinates</h2>
+      <div >
+        <p>X: {coordinates.x}</p>
+        <p>Y: {coordinates.y}</p>
+      </div>
     </div>
   )
 }

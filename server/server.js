@@ -1,7 +1,6 @@
 import express from 'express'
 import http from 'http'
 import cors from 'cors'
-import { v4 } from 'uuid'
 import { Server } from 'socket.io'
 
 const app = express()
@@ -29,8 +28,9 @@ io.on("connection", (socket) => {
     socket.to(data).emit('updateUsers', roomSize)
   })
 
-  socket.on("drawing", (data) => {
-    socket.to(data.room).emit("new_drawing", data)
+  socket.on("draw", (data) => {
+    console.log(socket.id, "drawing", data.room)
+    socket.to(data.room).emit("drawing", data)
   })
 
   socket.on("send_message", (data) => {
