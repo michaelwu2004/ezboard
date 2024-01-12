@@ -37,7 +37,7 @@ function Chat({ socket, username, room }) {
 
 
   return (
-    <div className='flex flex-col border min-w-72 max-w-72 z-50'>
+    <div className='flex flex-col flex-grow border'>
       <div className='flame rounded-t font-bold'>
         Chat
       </div>

@@ -1,70 +1,98 @@
 import { useRef, useState, useEffect } from 'react'
+import socket from '../helper/socket';
 
-function Board({ socket, room }) {
+function Board({ room }) {
 
   const canvasRef = useRef(null)
   const [drawing, setDrawing] = useState(false)
+
+  const dpi = window.devicePixelRatio;
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const context = canvas.getContext('2d')
+
+    const resizeCanvas = () => {
+
+      canvas.width = window.innerWidth * dpi;
+      canvas.height = window.innerHeight * dpi;
+      context.scale(dpi, dpi)
+
+    }
+
+    resizeCanvas()
+
+    window.addEventListener('resize', resizeCanvas)
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas)
+    }
+  }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas.getContext('2d');
 
-    let prevX, prevY;
-    let currX, currY;
+    const getMousePosition = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = (window.innerWidth / rect.width);
+      const scaleY = (window.innerHeight / rect.height);
+
+      return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY,
+      };
+
+    };
+
+
+    let prevPos;
+    let currPos;
 
     const draw = (e) => {
       if (!drawing) return;
 
-      prevX = currX;
-      prevY = currY;
-      currX = e.clientX - canvas.offsetLeft;
-      currY = e.clientY - canvas.offsetTop;
+      prevPos = currPos;
+      currPos = getMousePosition(e);
 
       context.beginPath();
-      context.arc(currX, currY, 1, 0, 1 * Math.PI);
-      context.moveTo(prevX, prevY);
-
-      context.lineTo(currX, currY);
+      context.moveTo(prevPos.x, prevPos.y);
+      console.log("here", currPos.x, currPos.y)
+      context.lineTo(currPos.x, currPos.y);
       context.strokeStyle = 'black';
-      context.lineWidth = 2;
+      context.lineWidth = 3;
       context.stroke();
-      context.closePath();
 
-      // Emit socket event or perform other actions here if needed
-      socket.emit("draw", { room, prevX, prevY, currX, currY })
+      socket.emit('draw', { room, prevPos, currPos });
     };
 
-    const socketDraw = (px, py, cx, cy) => {
+    const socketDraw = (prevPt, currPt) => {
       context.beginPath();
-      context.arc(cx, cy, 1, 0, 1 * Math.PI);
-      context.moveTo(px, py);
-      context.lineTo(cx, cy);
+      context.moveTo(prevPt.x, prevPt.y);
+      context.lineTo(currPt.x, currPt.y);
       context.strokeStyle = 'black';
-      context.lineWidth = 2;
+      context.lineWidth = 3;
       context.stroke();
       context.closePath();
     }
 
     socket.on("drawing", (data) => {
-      socketDraw(data.prevX, data.prevY, data.currX, data.currY)
+      socketDraw(data.prevPos, data.currPos)
     })
 
     const startDrawing = (e) => {
       setDrawing(true)
-      currX = e.clientX - canvas.offsetLeft;
-      currY = e.clientY - canvas.offsetTop;
+      currPos = getMousePosition(e);
     }
 
-    const finishDrawing = () => {
+    const finishDrawing = (e) => {
       setDrawing(false)
+      e.preventDefault();
     }
 
     canvas.addEventListener('mousedown', startDrawing)
-
     canvas.addEventListener('mousemove', draw)
-
     canvas.addEventListener('mouseup', finishDrawing)
-
     canvas.addEventListener('mouseleave', finishDrawing)
 
     return () => {
@@ -73,15 +101,12 @@ function Board({ socket, room }) {
       canvas.removeEventListener('mouseup', finishDrawing);
       canvas.removeEventListener('mouseleave', finishDrawing)
     };
-  }, [drawing]);
+  }, [drawing, room]);
 
   return (
-    <div className='p-2 border'>
-      <canvas className='border'
-        ref={canvasRef}
-
-      />
-    </div>
+    <canvas className='border w-full h-full'
+      ref={canvasRef}
+    />
   )
 }
 

@@ -1,14 +1,12 @@
 import './index.css'
 import './App.css'
-import Test from './components/Test'
+import Room from './components/Room'
 
 function App() {
-
-
   return (
     <>
-      <div className='w-screen h-screen'>
-        <Test />
+      <div className='h-full w-full'>
+        <Room />
       </div>
     </>
   )
